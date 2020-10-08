@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
-
+const bcrypt = require('bcrypt');
 // router.get('/', (req, res, next) => {
 //     res.status(200).json({
 //         message: 'Handling GET requests to /users'
@@ -65,6 +65,22 @@ router.delete("/:id", async (req, res) => {
         [id]);
 
         res.status(200).json("User Deleted Succefully!");
+    } catch (error) {
+        console.log(error.message);
+    }
+});
+
+router.post("/signup", async (req, res) => {
+    try {
+        const { username, email, password } = req.body;
+        console.log({username, email, password})
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log(hashedPassword);
+        const newUser = await pool.query(
+            "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
+            [username, email, hashedPassword]
+        );
+        res.status(201).json(newUser.rows[0])
     } catch (error) {
         console.log(error.message);
     }
