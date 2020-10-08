@@ -76,11 +76,31 @@ router.post("/signup", async (req, res) => {
         console.log({username, email, password})
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log(hashedPassword);
-        const newUser = await pool.query(
-            "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
-            [username, email, hashedPassword]
+        let errors = [];
+        const checkemail = await pool.query(
+            "SELECT * FROM users where email = $1",
+            [email],
+            (err, results) => {
+                if(err){
+                    throw err;
+                }
+                console.log(results.rows);
+
+                if(results.rows.length > 0){
+                    errors.push({ message: "Email already Exist!"});
+                    res.status(500).json({ message: "Email already exists!"});
+                }
+                else{
+                    const newUser = pool.query(
+                        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
+                        [username, email, hashedPassword]
+                    );
+                    res.status(201).json({message:"User added Succefully!"});
+                }
+            }
         );
-        res.status(201).json(newUser.rows[0])
+
+        
     } catch (error) {
         console.log(error.message);
     }
