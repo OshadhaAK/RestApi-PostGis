@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 // router.get('/', (req, res, next) => {
 //     res.status(200).json({
 //         message: 'Handling GET requests to /users'
@@ -101,6 +103,62 @@ router.post("/signup", async (req, res) => {
         );
 
         
+    } catch (error) {
+        console.log(error.message);
+    }
+});
+
+router.post("/signin", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        console.log({email, password});
+        const authenticateUser = await pool.query(
+            "SELECT * FROM users where email = $1",
+            [email],
+            (err, results) => {
+                if(err){
+                    throw err;
+                }
+                console.log(results.rows);
+
+                if(results.rows.length > 0){
+                    const user = results.rows[0];
+                    bcrypt.compare(password, user.password, (err, isMatch) => {
+                        if(err){
+                            throw err
+                        }
+                        if(isMatch){
+                            const token = jwt.sign({
+                                email: user.email,
+                                userName: user.username
+                            }, 
+                            process.env.JWT_KEY,
+                            {
+                                expiresIn: "1h"
+                            });
+                            res.status(200).json({
+                                message: "success",
+                                // userCredentials: user,
+                                token: token
+                            });
+                        }
+                        else{
+                            res.status(500).json({
+                                message: "Password is invalid!",
+                                token: null
+                            });
+                        }
+                    });
+                    
+                }
+                else{
+                    res.status(500).json({
+                        message: "Email is not registered!",
+                        token: null
+                    });
+                    
+                }
+            });       
     } catch (error) {
         console.log(error.message);
     }
