@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const checkAuth = require('../middleware/check-auth');
 
 // router.get('/', (req, res, next) => {
 //     res.status(200).json({
@@ -10,7 +11,7 @@ const jwt = require('jsonwebtoken');
 //     });
 // });
 
-router.get("/", async (req, res) => {
+router.get("/", checkAuth, async (req, res) => {
     try {
         const allUsers = await pool.query(
             "SELECT * FROM users"
@@ -32,7 +33,7 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", checkAuth, async (req, res) => {
     try {
         const { username } = req.body;
         const newUser = await pool.query(
