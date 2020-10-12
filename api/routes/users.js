@@ -19,4 +19,8 @@ router.post("/signup", UserController.user_signup);
 
 router.post("/signin", UserController.user_signin);
 
+router.post("/forgot_password", UserController.forgot_password);
+
+router.post("/reset_password", checkAuth, UserController.reset_password);
+
 module.exports = router;
