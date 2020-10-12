@@ -183,7 +183,7 @@ exports.forgot_password = async (req, res) => {
 
                 //******************************** part of sending email***********************************
                 sendMail(user.email, token, info => {
-                    //console.log(`The mail has beed send 😃 and the id is ${info.messageId}`);
+                    console.log(`The mail has beed send 😃 and the id is ${info.messageId}`);
                     res.send(info);
                 });
 
